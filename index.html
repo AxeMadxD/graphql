@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Horizon: a profile page built on the Tomorrow School GraphQL API">
+  <title>Horizon</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cpath d='M10 30a14 14 0 0 1 28 0z' fill='%23ff7a59'/%3E%3Cpath d='M6 35h36M14 41h20' stroke='%238b6cff' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/style.css">
+  <script type="module" src="js/main.js"></script>
+</head>
+<body>
+  <svg class="defs" aria-hidden="true">
+    <defs>
+      <linearGradient id="dawn" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#ffb35c"/>
+        <stop offset=".55" stop-color="#ff7a59"/>
+        <stop offset="1" stop-color="#ff5c8a"/>
+      </linearGradient>
+      <symbol id="logo" viewBox="0 0 48 48">
+        <path d="M24 5v6M9.3 13.3l4.3 4.3M38.7 13.3l-4.3 4.3" stroke="url(#dawn)" stroke-width="3" stroke-linecap="round"/>
+        <path d="M10 31a14 14 0 0 1 28 0z" fill="url(#dawn)"/>
+        <path d="M5 35.5h38M12 41h24" stroke="#8b6cff" stroke-width="3" stroke-linecap="round"/>
+      </symbol>
+    </defs>
+  </svg>
+
+  <div id="app"></div>
+
+  <template id="login-template">
+    <main class="login">
+      <form class="login-card" novalidate>
+        <div class="brand">
+          <svg class="brand-mark"><use href="#logo"/></svg>
+          <div>
+            <h1>Horizon</h1>
+            <p>Your journey at Tomorrow School</p>
+          </div>
+        </div>
+        <label class="field">
+          <span>Username or email</span>
+          <input name="identifier" type="text" autocomplete="username" autocapitalize="off" spellcheck="false">
+        </label>
+        <label class="field">
+          <span>Password</span>
+          <span class="password">
+            <input name="password" type="password" autocomplete="current-password">
+            <button class="reveal" type="button" aria-pressed="false">Show</button>
+          </span>
+        </label>
+        <p class="form-error" role="alert" hidden></p>
+        <button class="button primary" type="submit">Sign in</button>
+        <p class="hint">Use the same login and password as on the school platform.</p>
+      </form>
+    </main>
+  </template>
+
+  <template id="shell-template">
+    <header class="topbar">
+      <a class="brand small" href="#/profile">
+        <svg class="brand-mark"><use href="#logo"/></svg>
+        <span>Horizon</span>
+      </a>
+      <nav class="tabs" aria-label="Pages">
+        <a href="#/profile" data-route="profile">Profile</a>
+        <a href="#/graphiql" data-route="graphiql">GraphiQL</a>
+      </nav>
+      <div class="account">
+        <span class="account-name" data-field="account"></span>
+        <button class="button ghost" type="button" data-action="logout">Log out</button>
+      </div>
+    </header>
+    <main class="page" id="page"></main>
+  </template>
+
+  <template id="graphiql-template">
+    <div class="graphiql">
+      <div class="graphiql-head">
+        <div>
+          <h2 class="section-title">GraphiQL</h2>
+          <p class="chart-note">Run your own queries on the school API with your session. Press Ctrl + Enter to run.</p>
+          <p class="chart-note" data-field="session"></p>
+        </div>
+        <label class="examples">
+          <span class="visually-hidden">Examples</span>
+          <select data-input="examples">
+            <option value="">Load an example…</option>
+          </select>
+        </label>
+      </div>
+      <div class="graphiql-body">
+        <section class="card editor" aria-label="Query editor">
+          <div class="pane-bar">
+            <span class="card-title">Query</span>
+            <button class="button primary" type="button" data-action="run">Run</button>
+          </div>
+          <textarea class="code" data-input="query" spellcheck="false" aria-label="GraphQL query"></textarea>
+          <span class="card-title">Variables</span>
+          <textarea class="code variables" data-input="variables" spellcheck="false" aria-label="Query variables"></textarea>
+        </section>
+        <section class="card output-pane" aria-label="Result">
+          <div class="pane-bar">
+            <span class="card-title">Result</span>
+            <span class="status" data-output="status"></span>
+          </div>
+          <pre class="code output" data-output="result"></pre>
+        </section>
+        <section class="card schema" aria-label="Schema explorer">
+          <span class="card-title">Schema</span>
+          <ul class="schema-list" data-list="schema">
+            <li class="muted">Loading…</li>
+          </ul>
+          <div class="type-detail" data-output="type"></div>
+        </section>
+      </div>
+    </div>
+  </template>
+
+  <template id="profile-template">
+    <div class="profile" aria-busy="true">
+      <div class="overview">
+        <section class="card identity" aria-labelledby="identity-title">
+          <h2 class="card-title" id="identity-title">Identity</h2>
+          <div class="person">
+            <div class="avatar" data-field="initials" aria-hidden="true"></div>
+            <div>
+              <p class="person-name" data-field="name"></p>
+              <p class="person-login" data-field="login"></p>
+            </div>
+          </div>
+          <dl class="facts">
+            <div><dt>User ID</dt><dd data-field="id"></dd></div>
+            <div><dt>Email</dt><dd data-field="email"></dd></div>
+            <div><dt>Campus</dt><dd data-field="campus"></dd></div>
+            <div><dt>Joined</dt><dd data-field="joined"></dd></div>
+          </dl>
+        </section>
+
+        <section class="card" aria-labelledby="xp-title">
+          <h2 class="card-title" id="xp-title">XP and level</h2>
+          <p class="headline" data-field="xp-total"></p>
+          <p class="caption" data-field="xp-caption"></p>
+          <ul class="chips" data-list="xp-events"></ul>
+          <dl class="facts">
+            <div><dt>Level</dt><dd data-field="level"></dd></div>
+            <div><dt>Projects passed</dt><dd data-field="projects-passed"></dd></div>
+            <div><dt>Last project</dt><dd data-field="last-project"></dd></div>
+          </dl>
+        </section>
+
+        <section class="card" aria-labelledby="audits-title">
+          <h2 class="card-title" id="audits-title">Audits</h2>
+          <p class="headline" data-field="ratio"></p>
+          <p class="caption">audit ratio</p>
+          <div class="ratio-bars">
+            <div class="ratio-row">
+              <span>Done</span>
+              <span class="bar"><span class="bar-fill done" data-bar="done"></span></span>
+              <span data-field="audit-done"></span>
+            </div>
+            <div class="ratio-row">
+              <span>Received</span>
+              <span class="bar"><span class="bar-fill received" data-bar="received"></span></span>
+              <span data-field="audit-received"></span>
+            </div>
+          </div>
+          <dl class="facts">
+            <div><dt>Audits given</dt><dd data-field="audit-count"></dd></div>
+            <div><dt>Results</dt><dd data-field="audit-results"></dd></div>
+          </dl>
+        </section>
+      </div>
+
+      <section class="statistics" aria-labelledby="statistics-title">
+        <h2 class="section-title" id="statistics-title">Statistics</h2>
+        <div class="charts">
+          <article class="card chart-card wide">
+            <h3 class="chart-title">XP over time</h3>
+            <p class="chart-note">Cumulative XP earned in the module. Hover or use the arrow keys to read each step.</p>
+            <div class="chart" data-chart="timeline"></div>
+          </article>
+          <article class="card chart-card">
+            <h3 class="chart-title">XP by project</h3>
+            <p class="chart-note">The projects that brought the most XP in the module.</p>
+            <div class="chart" data-chart="projects"></div>
+          </article>
+          <article class="card chart-card">
+            <h3 class="chart-title">Audits done and received</h3>
+            <p class="chart-note">How much you audited others compared to how much you were audited.</p>
+            <div class="chart" data-chart="audits"></div>
+          </article>
+          <article class="card chart-card">
+            <h3 class="chart-title">Project results</h3>
+            <p class="chart-note">Passed and failed project attempts.</p>
+            <div class="chart" data-chart="results"></div>
+          </article>
+          <article class="card chart-card">
+            <h3 class="chart-title">Skills</h3>
+            <p class="chart-note">Your best level in each skill, in percent.</p>
+            <div class="chart" data-chart="skills"></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="card activity" aria-labelledby="activity-title">
+        <h2 class="card-title" id="activity-title">Recent activity</h2>
+        <ol class="activity-list" data-list="activity"></ol>
+      </section>
+    </div>
+  </template>
+</body>
+</html>
